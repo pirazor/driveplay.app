@@ -1,5 +1,6 @@
 import { Readable } from 'node:stream';
 import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { config } from './config.js';
 import { assertSafeUrl, HttpError } from './security.js';
 import { installYouTubeRuntime } from './youtubeRuntime.js';
@@ -102,6 +103,10 @@ export async function handleResolve(req, res) {
     // than the default `web` client (helps dodge the datacenter "not a bot" wall).
     const clients = process.env.YTDLP_CLIENTS || 'default,tv,mweb,web_safari';
     args.push('--extractor-args', `youtube:player_client=${clients}`);
+    // Authenticate with a logged-in account's cookies (Netscape cookies.txt) —
+    // clears YouTube's "confirm you're not a bot" wall on datacenter IPs.
+    const cookiesFile = process.env.YT_COOKIES_FILE || '/app/cookies.txt';
+    if (existsSync(cookiesFile)) args.push('--cookies', cookiesFile);
     if (process.env.UPSTREAM_PROXY) args.push('--proxy', process.env.UPSTREAM_PROXY);
     args.push(watch);
     meta = JSON.parse(await ytdlp(args));
