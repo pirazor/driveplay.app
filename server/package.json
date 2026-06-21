@@ -1,0 +1,21 @@
+{
+  "name": "driveplay-media-proxy",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Media proxy + extraction backend for the in-car app (Live TV HLS proxy, YouTube resolve/search).",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "jintr": "^3.3.1",
+    "youtubei.js": "^17.0.1"
+  }
+}

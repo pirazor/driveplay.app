@@ -1,0 +1,43 @@
+# Run the media proxy alongside an existing n8n + Traefik stack
+# (e.g. Hostinger's one-click n8n VPS template).
+#
+# Recommended: paste the `media-proxy` service below into the SAME
+# docker-compose.yml that already runs n8n + Traefik, so it joins Traefik's
+# network automatically. Then:
+#
+#     docker compose up -d media-proxy
+#
+# IMPORTANT — match these to your existing n8n service's labels:
+#   • the certresolver name  (Hostinger template usually: mytlschallenge)
+#   • the entrypoint name     (usually: websecure)
+#   • the Traefik network     (if your compose uses an explicit/external one)
+#
+# And add a DNS A record  api.driveplay.app -> YOUR_VPS_IP  before starting,
+# so Traefik can obtain the TLS certificate.
+
+services:
+  media-proxy:
+    # Builds straight from the repo's server/ folder — no manual clone needed.
+    build: https://github.com/pirazor/driveplay.app.git#main:server
+    container_name: driveplay-media-proxy
+    restart: unless-stopped
+    environment:
+      - PORT=8787
+      - CORS_ORIGINS=https://driveplay.app
+      - YOUTUBE_ENABLED=true
+      - PLAYLIST_CACHE_SECONDS=2
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.media.rule=Host(`api.driveplay.app`)
+      - traefik.http.routers.media.entrypoints=websecure
+      - traefik.http.routers.media.tls=true
+      # 👇 change to match your n8n service's certresolver
+      - traefik.http.routers.media.tls.certresolver=mytlschallenge
+      - traefik.http.services.media.loadbalancer.server.port=8787
+    # If your Traefik uses an explicit/external network, uncomment and set it:
+    # networks:
+    #   - your_traefik_network
+
+# networks:
+#   your_traefik_network:
+#     external: true
