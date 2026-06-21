@@ -98,6 +98,10 @@ export async function handleResolve(req, res) {
   let meta;
   try {
     const args = ['-J', '--no-warnings', '--no-playlist'];
+    // Try alternate YouTube player clients — some are gated less aggressively
+    // than the default `web` client (helps dodge the datacenter "not a bot" wall).
+    const clients = process.env.YTDLP_CLIENTS || 'default,tv,mweb,web_safari';
+    args.push('--extractor-args', `youtube:player_client=${clients}`);
     if (process.env.UPSTREAM_PROXY) args.push('--proxy', process.env.UPSTREAM_PROXY);
     args.push(watch);
     meta = JSON.parse(await ytdlp(args));
